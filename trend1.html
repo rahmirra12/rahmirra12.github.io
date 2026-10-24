@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Trends 图表切换</title>
+    <!-- 引入 Google Trends Embed 脚本 -->
+    <script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/3882_RC01/embed_loader.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* 按钮样式 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            border: 1px solid #d2e3fc;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #d2e3fc;
+        }
+
+        .btn.active {
+            background-color: #1a73e8;
+            color: #ffffff;
+            border-color: #1a73e8;
+        }
+
+        /* 图表容器样式 */
+        .chart-wrapper {
+            position: relative;
+            min-height: 450px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .chart-panel {
+    display: none; 
+    width: 100%;
+    height: 480px; /* 必须给移动端一个绝对高度，不能只用 100% */
+}
+
+        .chart-panel.active {
+            display: block; /* 显示当前激活的面板 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>谷歌趋势 (Google Trends) 动态切换</h1>
+
+    <!-- 控制按钮 -->
+    <div class="button-group">
+        <button class="btn active" onclick="switchTab('chart1', this)">AI vs Web3</button>
+        <button class="btn" onclick="switchTab('chart2', this)">Python vs JavaScript</button>
+        <button class="btn" onclick="switchTab('chart3', this)">iPhone vs Samsung</button>
+    </div>
+
+    <!-- 图表展示区域 -->
+   
+        
+        <!-- 图表 1 -->
+        <div id="chart1" class="chart-panel active">
+            <div id="trend-embed-1"></div>
+        </div>
+
+        <!-- 图表 2 -->
+        <div id="chart2" class="chart-panel">
+            <div id="trend-embed-2"></div>
+        </div>
+
+        <!-- 图表 3 -->
+        <div id="chart3" class="chart-panel">
+            <div id="trend-embed-3"></div>
+        </div>
+
+    </div>
+
+
+<script type="text/javascript">
+    // 标记每个图表是否已经加载过（防止重复嵌入加载）
+    const loadedCharts = {
+        chart1: false,
+        chart2: false,
+        chart3: false
+    };
+
+    // 渲染各个图表的方法
+    function renderChart(chartId) {
+        if (loadedCharts[chartId]) return; // 如果已经加载过了，就不再重复调用
+
+        switch (chartId) {
+            case 'chart1':
+                trends.embed.renderExploreWidgetTo(
+                    document.getElementById('trend-embed-1'),
+                    "TIMESERIES",
+                    {
+                        "comparisonItem": [
+                            {"keyword": "Artificial Intelligence", "geo": "", "time": "today 12-m"}
+                        ],
+                        "category": 0,
+                        "property": ""
+                    },
+                    {
+                        "exploreQuery": "q=workbuddy&date=today 12-m",
+                        "guestPath": "https://trends.google.com:443/trends/embed/"
+                    }
+                );
+                break;
+
+            case 'chart2':
+                trends.embed.renderExploreWidgetTo(
+                    document.getElementById('trend-embed-2'),
+                    "TIMESERIES",
+                    {
+                        "comparisonItem": [
+                            {"keyword": "Python", "geo": "", "time": "today 12-m"}
+                        ],
+                        "category": 0,
+                        "property": ""
+                    },
+                    {
+                        "exploreQuery": "q=bitcoin&date=today 12-m",
+                        "guestPath": "https://trends.google.com:443/trends/embed/"
+                    }
+                );
+                break;
+
+            case 'chart3':
+                trends.embed.renderExploreWidgetTo(
+                    document.getElementById('trend-embed-3'),
+                    "TIMESERIES",
+                    {
+                        "comparisonItem": [
+                            {"keyword": "iPhone", "geo": "", "time": "today 12-m"}
+                        ],
+                        "category": 0,
+                        "property": ""
+                    },
+                    {
+                        "exploreQuery": "q=iPhone&date=today 12-m",
+                        "guestPath": "https://trends.google.com:443/trends/embed/"
+                    }
+                );
+                break;
+        }
+
+        // 标记为已加载
+        loadedCharts[chartId] = true;
+    }
+
+    // Tab 切换逻辑
+    function switchTab(chartId, btnElement) {
+        // 1. 切换按钮高亮样式
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        // 2. 切换图表面板显隐
+        const panels = document.querySelectorAll('.chart-panel');
+        panels.forEach(panel => panel.classList.remove('active'));
+        document.getElementById(chartId).classList.add('active');
+
+        // 3. 延迟加载/渲染图表（第一次切换到该面板时才进行加载）
+        renderChart(chartId);
+    }
+
+    // 页面加载完成后默认初始化渲染第一个图表
+    window.addEventListener('DOMContentLoaded', () => {
+        renderChart('chart1');
+    });
+</script>
+
+</body>
+</html>
