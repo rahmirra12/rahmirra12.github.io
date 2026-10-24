@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Trends 图表切换</title>
+    <title>Google Trends 时间维度切换</title>
     <!-- 引入 Google Trends Embed 脚本 -->
     <script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/3882_RC01/embed_loader.js"></script>
     <style>
@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             background: #fff;
             border-radius: 8px;
@@ -25,32 +25,40 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 6px;
+            font-size: 22px;
         }
 
-        /* 按钮样式 */
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* 按钮组样式 */
         .button-group {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 8px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
         .btn {
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            border: 1px solid #d2e3fc;
-            padding: 10px 20px;
-            font-size: 14px;
+            background-color: #f1f3f4;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            padding: 6px 14px;
+            font-size: 13px;
             font-weight: 500;
-            border-radius: 6px;
+            border-radius: 16px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .btn:hover {
-            background-color: #d2e3fc;
+            background-color: #e8eaed;
         }
 
         .btn.active {
@@ -59,117 +67,154 @@
             border-color: #1a73e8;
         }
 
-        /* 图表容器样式 */
+        /* 图表容器 */
         .chart-wrapper {
             position: relative;
-            min-height: 450px;
+            min-height: 500px; 
             border: 1px solid #eee;
             border-radius: 6px;
             padding: 10px;
+            background-color: #fff;
         }
 
         .chart-panel {
-    display: none; 
-    width: 100%;
-    height: 480px; /* 必须给移动端一个绝对高度，不能只用 100% */
-}
+            display: none; 
+            width: 100%;
+            height: 500px; 
+            position: relative;
+        }
 
         .chart-panel.active {
-            display: block; /* 显示当前激活的面板 */
+            display: block; 
+        }
+
+        /* 统一的加载/错误提示区域 */
+        .loading-notice {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* 强制 iframe 铺满 */
+        .chart-panel iframe {
+            width: 100% !important;
+            height: 500px !important;
+            border: none !important;
+            position: relative;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>谷歌趋势 (Google Trends) 动态切换</h1>
+    <h1>Google Trends 时间维度切换</h1>
+    <div class="subtitle">当前关键词：<strong id="kw-display">AI</strong></div>
 
+    <!-- 按钮组 -->
     <div class="button-group">
-        <button class="btn active" onclick="switchTimeTab('t1', 'now 1-H', this)">过去 1 小时</button>
+        <button class="btn" onclick="switchTimeTab('t1', 'now 1-H', this)">过去 1 小时</button>
         <button class="btn" onclick="switchTimeTab('t2', 'now 4-H', this)">过去 4 小时</button>
         <button class="btn" onclick="switchTimeTab('t3', 'now 1-d', this)">过去 1 天</button>
         <button class="btn" onclick="switchTimeTab('t4', 'now 7-d', this)">过去 7 天</button>
         <button class="btn" onclick="switchTimeTab('t5', 'today 1-m', this)">过去 30 天</button>
         <button class="btn" onclick="switchTimeTab('t6', 'today 3-m', this)">过去 90 天</button>
-        <button class="btn" onclick="switchTimeTab('t7', 'today 12-m', this)">过去 12 个月</button>
+        <button class="btn active" onclick="switchTimeTab('t7', 'today 12-m', this)">过去 12 个月</button>
         <button class="btn" onclick="switchTimeTab('t8', 'today 5-y', this)">过去 5 年</button>
         <button class="btn" onclick="switchTimeTab('t9', 'all', this)">2004 年至今</button>
     </div>
 
-    <!-- 动态面板容器 -->
-    <div class="chart-wrapper" id="chart-wrapper">
-        <!-- 面板通过 JS 动态创建或直接声明 -->
-        <div id="t1" class="chart-panel active"><div id="embed-t1" style="width:100%;height:100%;"></div></div>
-        <div id="t2" class="chart-panel"><div id="embed-t2" style="width:100%;height:100%;"></div></div>
-        <div id="t3" class="chart-panel"><div id="embed-t3" style="width:100%;height:100%;"></div></div>
-        <div id="t4" class="chart-panel"><div id="embed-t4" style="width:100%;height:100%;"></div></div>
-        <div id="t5" class="chart-panel"><div id="embed-t5" style="width:100%;height:100%;"></div></div>
-        <div id="t6" class="chart-panel"><div id="embed-t6" style="width:100%;height:100%;"></div></div>
-        <div id="t7" class="chart-panel"><div id="embed-t7" style="width:100%;height:100%;"></div></div>
-        <div id="t8" class="chart-panel"><div id="embed-t8" style="width:100%;height:100%;"></div></div>
-        <div id="t9" class="chart-panel"><div id="embed-t9" style="width:100%;height:100%;"></div></div>
+    <!-- 面板容器 -->
+    <div class="chart-wrapper">
+        <div id="t1" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t1"></div></div>
+        <div id="t2" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t2"></div></div>
+        <div id="t3" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t3"></div></div>
+        <div id="t4" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t4" style="width:100%;height:100%;"></div></div>
+        <div id="t5" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t5" style="width:100%;height:100%;"></div></div>
+        <div id="t6" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t6" style="width:100%;height:100%;"></div></div>
+        <div id="t7" class="chart-panel active"><div class="loading-notice">图表加载中...</div><div id="embed-t7" style="width:100%;height:100%;"></div></div>
+        <div id="t8" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t8" style="width:100%;height:100%;"></div></div>
+        <div id="t9" class="chart-panel"><div class="loading-notice">图表加载中...</div><div id="embed-t9" style="width:100%;height:100%;"></div></div>
     </div>
-    </div>
+</div>
 
 <script type="text/javascript">
-    // 1. 设置想要查询的关键词
     const keyword = "AI";
-
-    // 2. 缓存已被渲染的选项，防止重复请求
     const loadedTabs = {};
 
-    /**
-     * 渲染趋势图表核心逻辑
-     * @param {string} tabId - DOM 节点 ID
-     * @param {string} timeParam - 谷歌官方 time 参数
-     */
+    // 安全检查 Google SDK 是否就绪
+    function checkTrendsLoaded(callback) {
+        if (typeof trends !== 'undefined' && trends.embed && typeof trends.embed.renderExploreWidgetTo === 'function') {
+            callback();
+        } else {
+            // 如果 SDK 还没加载好，每 100ms 重试一次，最多等 10 秒
+            let retries = 0;
+            const timer = setInterval(() => {
+                retries++;
+                if (typeof trends !== 'undefined' && trends.embed && typeof trends.embed.renderExploreWidgetTo === 'function') {
+                    clearInterval(timer);
+                    callback();
+                } else if (retries > 100) {
+                    clearInterval(timer);
+                    alert("Google Trends 脚本加载超时，请检查网络（是否能连接 Google 服务）。");
+                }
+            }, 100);
+        }
+    }
+
     function renderTrendsChart(tabId, timeParam) {
         if (loadedTabs[tabId]) return;
 
-        const targetElem = document.getElementById(`embed-${tabId}`);
-
-        trends.embed.renderExploreWidgetTo(
-            targetElem,
-            "TIMESERIES",
-            {
-                "comparisonItem": [
-                    { "keyword": keyword, "geo": "", "time": timeParam }
-                ],
-                "category": 0,
-                "property": ""
-            },
-            {
-                "exploreQuery": `q=${encodeURIComponent(keyword)}&date=${encodeURIComponent(timeParam)}`,
-                "guestPath": "https://trends.google.com:443/trends/embed/"
+        checkTrendsLoaded(() => {
+            const targetElem = document.getElementById(`embed-${tabId}`);
+            
+            try {
+                trends.embed.renderExploreWidgetTo(
+                    targetElem,
+                    "TIMESERIES",
+                    {
+                        "comparisonItem": [
+                            { "keyword": keyword, "geo": "", "time": timeParam }
+                        ],
+                        "category": 0,
+                        "property": ""
+                    },
+                    {
+                        "exploreQuery": `q=${encodeURIComponent(keyword)}&date=${encodeURIComponent(timeParam)}`,
+                        "guestPath": "https://trends.google.com:443/trends/embed/"
+                    }
+                );
+                loadedTabs[tabId] = true;
+            } catch (err) {
+                console.error("图表渲染失败:", err);
             }
-        );
-
-        loadedTabs[tabId] = true;
+        });
     }
 
-    /**
-     * Tab 切换控制逻辑
-     */
     function switchTimeTab(tabId, timeParam, btnElement) {
-        // 按钮高亮处理
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
 
-        // 面板显隐切换
         const panels = document.querySelectorAll('.chart-panel');
         panels.forEach(panel => panel.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
 
-        // 懒加载该时间范围的图表
         renderTrendsChart(tabId, timeParam);
     }
 
-    // 页面加载后默认渲染第一个（过去 1 小时）
-    window.addEventListener('DOMContentLoaded', () => {
+    // 页面加载完成后调用
+    window.addEventListener('load', () => {
         document.getElementById('kw-display').innerText = keyword;
-        renderTrendsChart('t1', 'now 1-H');
+        // 默认渲染 t7 (过去12个月)
+        renderTrendsChart('t7', 'today 12-m');
     });
 </script>
+
 </body>
 </html>
